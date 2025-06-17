@@ -1,0 +1,60 @@
+## Docker File for running GPULlama3.java with TornadoVM on NVIDIA GPUs
+## Adapted for GPULlama3.java v0.1.0-beta
+FROM nvidia/cuda:12.1.1-devel-ubuntu20.04
+
+LABEL MAINTAINER Athanasios Stratikopoulos <athanasios.stratikopoulos@manchester.ac.uk>
+
+# Base setup
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+RUN apt-get update && apt-get install -y \
+    tzdata \
+    build-essential git cmake maven openjdk-21-jdk python3-pip wget vim \
+    && rm -rf /var/lib/apt/lists/*
+
+#RUN apt-get update -q && apt-get install -qy \
+#        python3 build-essential vim git cmake maven openjdk-17-jdk python3-pip \
+#        wget && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install wget
+
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+RUN java -version
+RUN javac -version
+
+# Set JDK 17 explicitly
+ENV PATH /usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH
+ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
+ENV MAVEN_CONFIG=/root/.m2
+
+# Build GPULlama3.java and TornadoVM
+WORKDIR /gpullama3/
+RUN git clone --recursive https://github.com/beehive-lab/GPULlama3.java.git
+WORKDIR /gpullama3/GPULlama3.java
+RUN git checkout v0.1.0-beta && git submodule update --recursive
+
+# Install TornadoVM backend
+WORKDIR /gpullama3/GPULlama3.java/external/tornadovm
+ENV CMAKE_ROOT /usr
+
+# Build TornadoVM and install its artifacts
+RUN ./bin/tornadovm-installer --jdk jdk21 --backend ptx --mvn_single_threaded 
+
+# Set environment variables from set_paths manually
+ENV JAVA_HOME=/gpullama3/GPULlama3.java/external/tornadovm/etc/dependencies/TornadoVM-jdk21/jdk-21.0.7/
+ENV PATH=/gpullama3/GPULlama3.java/external/tornadovm/bin/bin:/gpullama3/GPULlama3.java/bin:$PATH
+ENV TORNADO_SDK=/gpullama3/GPULlama3.java/external/tornadovm/bin/sdk
+ENV TORNADO_ROOT=/gpullama3/GPULlama3.java/external/tornadovm
+ENV LLAMA_ROOT=/gpullama3/GPULlama3.java
+
+# Fix InaccessibleObjectException by configuring MAVEN_OPTS
+ENV MAVEN_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED"
+
+# Build GPULlama3.java with verbose output and custom Maven repo
+WORKDIR /gpullama3/GPULlama3.java
+RUN bash -c "mvn clean package -DskipTests -Dmaven.repo.local=/root/.m2/repository/"
+
+WORKDIR /data
+VOLUME ["/data"]
