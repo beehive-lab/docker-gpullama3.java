@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+IMAGE=beehivelab/gpullama3.java-nvidia-openjdk-ptx:latest
+if [[ "$1" == "--console" ]]; then
+    exec docker run --runtime=nvidia --rm -it -v "$PWD":/data "$IMAGE"
+else
+    exec docker run --runtime=nvidia --rm -it -v "$PWD":/data "$IMAGE" "/gpullama3/GPULlama3.java/llama-tornado" "$@"
+fi
