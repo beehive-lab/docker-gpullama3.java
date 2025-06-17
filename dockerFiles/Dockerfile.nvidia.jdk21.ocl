@@ -2,8 +2,6 @@
 ## Adapted for GPULlama3.java v0.1.0-beta
 FROM nvidia/opencl
 
-LABEL MAINTAINER Athanasios Stratikopoulos <athanasios.stratikopoulos@manchester.ac.uk>
-
 # Base setup
 RUN apt-get update -q && apt-get install -qy \
         python3 build-essential vim git cmake maven openjdk-17-jdk python3-pip \
@@ -33,10 +31,6 @@ ENV CMAKE_ROOT /usr
 
 # Build TornadoVM and install its artifacts
 RUN ./bin/tornadovm-installer --jdk jdk21 --backend opencl --mvn_single_threaded 
-
-#COPY gpullama3-installer /gpullama3/GPULlama3.java
-#WORKDIR /gpullama3/GPULlama3.java
-#RUN ./gpullama3-installer
 
 ## Set environment variables from set_paths manually
 ENV JAVA_HOME=/gpullama3/GPULlama3.java/external/tornadovm/etc/dependencies/TornadoVM-jdk21/jdk-21.0.7/

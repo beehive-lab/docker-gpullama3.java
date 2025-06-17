@@ -2,8 +2,6 @@
 ## Adapted for GPULlama3.java v0.1.0-beta
 FROM nvidia/cuda:12.1.1-devel-ubuntu20.04
 
-LABEL MAINTAINER Athanasios Stratikopoulos <athanasios.stratikopoulos@manchester.ac.uk>
-
 # Base setup
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
@@ -12,10 +10,6 @@ RUN apt-get update && apt-get install -y \
     tzdata \
     build-essential git cmake maven openjdk-21-jdk python3-pip wget vim \
     && rm -rf /var/lib/apt/lists/*
-
-#RUN apt-get update -q && apt-get install -qy \
-#        python3 build-essential vim git cmake maven openjdk-17-jdk python3-pip \
-#        wget && rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m pip install wget
 
