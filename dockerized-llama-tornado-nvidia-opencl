@@ -2,7 +2,7 @@
 
 IMAGE=beehivelab/gpullama3.java-nvidia-openjdk-opencl:latest
 if [[ "$1" == "--console" ]]; then
-    exec docker run --runtime=nvidia --rm -it -v "$PWD":/data "$IMAGE"
+    exec docker run --gpus all --rm -it -v "$PWD":/data "$IMAGE"
 else
-    exec docker run --runtime=nvidia --rm -it -v "$PWD":/data "$IMAGE" "/gpullama3/GPULlama3.java/llama-tornado" "$@"
+    exec docker run --gpus all --rm -it -v "$PWD":/data "$IMAGE" "/gpullama3/GPULlama3.java/llama-tornado" "$@"
 fi
